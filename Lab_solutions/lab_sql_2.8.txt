@@ -1,0 +1,40 @@
+1)
+
+SELECT title, length, 
+rank() over(order by length) 
+FROM sakila.film
+where length <> 0 or " ";
+
+2)
+SELECT title, length, rating, 
+rank() over(partition by rating order by length desc) 
+FROM sakila.film
+where length <> 0 or " ";
+
+3)
+select count(*), name
+from film_category as a
+inner join category as l 
+on a.category_id = l.category_id
+group by name
+order by count(*);
+
+4)
+
+select actor_id, count(film_id)
+from film_actor
+group by actor_id
+order by count(film_id) desc;
+
+select *
+from actor
+where actor_id = 107;
+
+5)
+
+select a.customer_id, first_name, last_name, count(rental_id)
+from customer
+inner join rental
+on customer.customer_id = rental.customer_id
+group by customer_id
+order by count(rental_id) desc;
