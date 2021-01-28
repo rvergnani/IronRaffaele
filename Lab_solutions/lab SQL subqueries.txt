@@ -1,0 +1,93 @@
+1)
+
+SELECT * FROM sakila.film
+WHERE title = 'Hunchback Impossible';
+
+SELECT inventory_id, film_id 
+FROM sakila.inventory
+WHERE film_id = 439;
+
+--with a join
+SELECT count(i.inventory_id), f.title 
+FROM film f 
+LEFT JOIN inventory i
+ON i.film_id = f.film_id
+WHERE f.title = 'Hunchback Impossible';
+
+
+2)
+
+SELECT title, length FROM sakila.film
+WHERE length > (SELECT avg(length) FROM sakila.film)
+ORDER BY length desc;
+
+
+3)
+
+SELECT fa.film_id, a.actor_id, a.first_name, a.last_name 
+FROM film_actor fa
+JOIN actor a
+ON fa.actor_id = a.actor_id
+WHERE film_id = (SELECT film_id FROM sakila.film WHERE title = 'Alone Trip');
+
+
+4)
+
+SELECT f.title, c.category_id
+FROM sakila.film_category c
+JOIN film f
+ON c.film_id = f.film_id
+WHERE category_id = (SELECT category_id FROM sakila.category WHERE name = 'Family');
+
+
+5) 
+--join
+
+SELECT c.first_name, c.last_name, c.email, d.country
+FROM customer c
+LEFT JOIN address a
+ON c.address_id = a.address_id
+LEFT JOIN city ci
+ON ci.city_id = a.city_id
+LEFT JOIN country d
+ON ci.country_id = d.country_id
+WHERE country = 'Canada';
+
+--subquery
+SELECT first_name, last_name, email FROM customer 
+WHERE address_id IN (SELECT address_id FROM address 
+WHERE city_id IN (SELECT city_id FROM city 
+WHERE country_id IN (SELECT country_id FROM country WHERE country = "Canada")));
+
+
+6)
+SELECT concat(first_name, ' ', last_name) AS actor_name, film.title, film.release_year
+FROM sakila.actor a
+INNER JOIN sakila.film_actor fa
+ON a.actor_id = fa.actor_id
+INNER JOIN film
+ON fa.film_id = f.film_id
+WHERE actor_id = (
+SELECT actor_id
+FROM sakila.actor
+INNER JOIN sakila.film_actor
+ON fa.actor_id = a.actor_id
+INNER JOIN sakila.film
+ON f.film_id = fa.film_id
+GROUP BY actor_id
+ORDER BY count(film_id) desc
+LIMIT 1
+)
+order by release_year desc;
+
+
+8)
+
+SELECT AVG(amount) FROM payment;
+SELECT customer_id, sum(amount) AS payment FROM customer c
+INNER JOIN payment p
+ON c.customer_id = p.pcustomer_id
+GROUP BY customer_id 
+HAVING payment > (SELECT AVG(total_payment) FROM (
+SELECT customer_id, SUM(amount) AS total_payment FROM payment GROUP BY customer_id) t)
+ORDER BY payment DESC;
