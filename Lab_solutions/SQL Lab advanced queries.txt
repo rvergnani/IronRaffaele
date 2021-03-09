@@ -1,0 +1,25 @@
+-- Lab | SQL Advanced queries --
+
+use sakila;
+select a1.first_name, a1.last_name, a2.first_name, a2.last_name 
+from film_actor f1
+join film_actor f2 
+on f1.film_id = f2.film_id
+and f1.actor_id < f2.actor_id
+join actor a1 
+on f1.actor_id = a1.actor_id
+join actor a2
+on f2.actor_id = a2.actor_id;
+
+select fa.film_id, f.title, fa.actor_id, a.first_name, a.last_name 
+from film_actor fa
+join film f on fa.film_id = f.film_id
+join actor a on fa.actor_id = a.actor_id
+where fa.actor_id in
+(
+select actor_id from film_actor
+group by actor_id
+having count(film_id) > 1
+order by count(film_id)
+)
+order by fa.film_id;
