@@ -1,0 +1,30 @@
+  
+-- LAB3 --
+
+use sakila;
+select distinct release_year from film;
+select * from film where title regexp 'ARMAGEDDON';
+select * from film where title like '%APOLLO';
+select * from film order by length desc limit 10;
+select count(*) from film where special_features regexp 'Behind the Scenes';
+alter table staff drop column picture;
+
+INSERT INTO staff (staff_id, first_name, last_name, address_id, email, store_id, active, username)
+SELECT '3', customer.first_name, customer.last_name, customer.address_id, customer.email, '2', '1', customer.first_name
+FROM customer 
+WHERE customer.first_name = 'Tammy' and customer.last_name = 'Sanders';
+
+INSERT INTO rental (rental_date, inventory_id, customer_id, staff_id)
+VALUES ( CURDATE(), '2' , '130', '1');
+
+select * from customer where active = 0;
+create table deleted_users (customer_id int unique not null, email varchar(255), address_id int unique not null, delete_date date);
+insert into deleted_users (customer_id, email, address_id, delete_date)
+select customer_id, email, address_id, CURDATE()
+from customer
+where active = 0;
+select * from deleted_users;
+
+SET SQL_SAFE_UPDATES = 0;
+SET FOREIGN_KEY_CHECKS=0;
+delete from customer where active = 0;

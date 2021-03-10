@@ -1,0 +1,12 @@
+use sakila;
+DESCRIBE film;
+SELECT * FROM sakila.actor;
+SELECT * FROM sakila.address;
+SELECT film.title AS film_title from sakila.film;
+SELECT DISTINCT language.name AS film_language FROM sakila.language;
+SELECT COUNT(store.store_id) AS store_count FROM sakila.store;
+SELECT COUNT(staff.staff_id) AS staff_count FROM sakila.staff;
+select (select count(*) FROM sakila.staff) as number_employees,(select count(*) from sakila.store) as number_stores;
+SELECT staff.first_name FROM sakila.staff;
+SELECT * FROM rental;
+SELECT COUNT(DISTINCT datediff(return_date, rental_date)) AS unique_days_count FROM rental;

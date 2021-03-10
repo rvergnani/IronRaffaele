@@ -1,0 +1,21 @@
+-- LAB 2--
+
+use sakila;
+select * from actor where first_name = 'Scarlett';
+select count(*) from film;
+select count(*) from rental;
+select max(length) as max_duration, min(length) as min_duration from film;
+select concat(floor(avg(length)/60), ' hours, ', round(avg(length)%60), ' minutes') as average_duration from film;
+select count(distinct last_name) from actor;
+select datediff(CURDATE(), min(rental_date)) from rental;
+select *, date_format(rental_date, '%M') as rental_month, date_format(rental_date, '%W') as week_day,
+case
+when date_format(rental_date, '%W') in ('Saturday', 'Sunday') then 'weekend'
+else 'workday'
+end as day_type from rental
+limit 20;
+select date(max(rental_date)) from rental;
+select *, date_format(rental_date, '%M') as Month_,
+date_format(rental_date, '%Y') as Year_
+from rental
+having Month_ = 'February' and Year_ = 2006;
