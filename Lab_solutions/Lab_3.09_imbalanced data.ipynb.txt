@@ -1,0 +1,997 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "from sklearn.linear_model import LogisticRegression\n",
+    "from sklearn.preprocessing import StandardScaler\n",
+    "import warnings\n",
+    "warnings.filterwarnings('ignore')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "churnData = pd.read_csv('lab-imbalanced-data/files_for_lab/customer_churn.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>customerID</th>\n",
+       "      <th>gender</th>\n",
+       "      <th>SeniorCitizen</th>\n",
+       "      <th>Partner</th>\n",
+       "      <th>Dependents</th>\n",
+       "      <th>tenure</th>\n",
+       "      <th>PhoneService</th>\n",
+       "      <th>MultipleLines</th>\n",
+       "      <th>InternetService</th>\n",
+       "      <th>OnlineSecurity</th>\n",
+       "      <th>...</th>\n",
+       "      <th>DeviceProtection</th>\n",
+       "      <th>TechSupport</th>\n",
+       "      <th>StreamingTV</th>\n",
+       "      <th>StreamingMovies</th>\n",
+       "      <th>Contract</th>\n",
+       "      <th>PaperlessBilling</th>\n",
+       "      <th>PaymentMethod</th>\n",
+       "      <th>MonthlyCharges</th>\n",
+       "      <th>TotalCharges</th>\n",
+       "      <th>Churn</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>7590-VHVEG</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>No</td>\n",
+       "      <td>1</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No phone service</td>\n",
+       "      <td>DSL</td>\n",
+       "      <td>No</td>\n",
+       "      <td>...</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>Month-to-month</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>Electronic check</td>\n",
+       "      <td>29.85</td>\n",
+       "      <td>29.85</td>\n",
+       "      <td>No</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>5575-GNVDE</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>0</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>34</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>No</td>\n",
+       "      <td>DSL</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>...</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>One year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>Mailed check</td>\n",
+       "      <td>56.95</td>\n",
+       "      <td>1889.5</td>\n",
+       "      <td>No</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>3668-QPYBK</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>0</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>2</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>No</td>\n",
+       "      <td>DSL</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>...</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>Month-to-month</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>Mailed check</td>\n",
+       "      <td>53.85</td>\n",
+       "      <td>108.15</td>\n",
+       "      <td>Yes</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>7795-CFOCW</td>\n",
+       "      <td>Male</td>\n",
+       "      <td>0</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>45</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No phone service</td>\n",
+       "      <td>DSL</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>...</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>One year</td>\n",
+       "      <td>No</td>\n",
+       "      <td>Bank transfer (automatic)</td>\n",
+       "      <td>42.30</td>\n",
+       "      <td>1840.75</td>\n",
+       "      <td>No</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>9237-HQITU</td>\n",
+       "      <td>Female</td>\n",
+       "      <td>0</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>2</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>No</td>\n",
+       "      <td>Fiber optic</td>\n",
+       "      <td>No</td>\n",
+       "      <td>...</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>No</td>\n",
+       "      <td>Month-to-month</td>\n",
+       "      <td>Yes</td>\n",
+       "      <td>Electronic check</td>\n",
+       "      <td>70.70</td>\n",
+       "      <td>151.65</td>\n",
+       "      <td>Yes</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>5 rows × 21 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   customerID  gender  SeniorCitizen Partner Dependents  tenure PhoneService  \\\n",
+       "0  7590-VHVEG  Female              0     Yes         No       1           No   \n",
+       "1  5575-GNVDE    Male              0      No         No      34          Yes   \n",
+       "2  3668-QPYBK    Male              0      No         No       2          Yes   \n",
+       "3  7795-CFOCW    Male              0      No         No      45           No   \n",
+       "4  9237-HQITU  Female              0      No         No       2          Yes   \n",
+       "\n",
+       "      MultipleLines InternetService OnlineSecurity  ... DeviceProtection  \\\n",
+       "0  No phone service             DSL             No  ...               No   \n",
+       "1                No             DSL            Yes  ...              Yes   \n",
+       "2                No             DSL            Yes  ...               No   \n",
+       "3  No phone service             DSL            Yes  ...              Yes   \n",
+       "4                No     Fiber optic             No  ...               No   \n",
+       "\n",
+       "  TechSupport StreamingTV StreamingMovies        Contract PaperlessBilling  \\\n",
+       "0          No          No              No  Month-to-month              Yes   \n",
+       "1          No          No              No        One year               No   \n",
+       "2          No          No              No  Month-to-month              Yes   \n",
+       "3         Yes          No              No        One year               No   \n",
+       "4          No          No              No  Month-to-month              Yes   \n",
+       "\n",
+       "               PaymentMethod MonthlyCharges  TotalCharges Churn  \n",
+       "0           Electronic check          29.85         29.85    No  \n",
+       "1               Mailed check          56.95        1889.5    No  \n",
+       "2               Mailed check          53.85        108.15   Yes  \n",
+       "3  Bank transfer (automatic)          42.30       1840.75    No  \n",
+       "4           Electronic check          70.70        151.65   Yes  \n",
+       "\n",
+       "[5 rows x 21 columns]"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "churnData.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "customerID           object\n",
+       "gender               object\n",
+       "SeniorCitizen         int64\n",
+       "Partner              object\n",
+       "Dependents           object\n",
+       "tenure                int64\n",
+       "PhoneService         object\n",
+       "MultipleLines        object\n",
+       "InternetService      object\n",
+       "OnlineSecurity       object\n",
+       "OnlineBackup         object\n",
+       "DeviceProtection     object\n",
+       "TechSupport          object\n",
+       "StreamingTV          object\n",
+       "StreamingMovies      object\n",
+       "Contract             object\n",
+       "PaperlessBilling     object\n",
+       "PaymentMethod        object\n",
+       "MonthlyCharges      float64\n",
+       "TotalCharges         object\n",
+       "Churn                object\n",
+       "dtype: object"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "churnData.dtypes"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "customerID          0.0\n",
+       "gender              0.0\n",
+       "SeniorCitizen       0.0\n",
+       "Partner             0.0\n",
+       "Dependents          0.0\n",
+       "tenure              0.0\n",
+       "PhoneService        0.0\n",
+       "MultipleLines       0.0\n",
+       "InternetService     0.0\n",
+       "OnlineSecurity      0.0\n",
+       "OnlineBackup        0.0\n",
+       "DeviceProtection    0.0\n",
+       "TechSupport         0.0\n",
+       "StreamingTV         0.0\n",
+       "StreamingMovies     0.0\n",
+       "Contract            0.0\n",
+       "PaperlessBilling    0.0\n",
+       "PaymentMethod       0.0\n",
+       "MonthlyCharges      0.0\n",
+       "TotalCharges        0.0\n",
+       "Churn               0.0\n",
+       "dtype: float64"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "churnData.isna().sum()/churnData.shape[0]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(7043, 21)"
+      ]
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "churnData.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "y = churnData['Churn']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "X = churnData[['SeniorCitizen','tenure','MonthlyCharges']]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0    5901\n",
+       "1    1142\n",
+       "Name: SeniorCitizen, dtype: int64"
+      ]
+     },
+     "execution_count": 20,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X['SeniorCitizen'].value_counts()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 432x288 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "sns.histplot(X['MonthlyCharges'], bins=50)\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 432x288 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "sns.histplot(X['tenure'], bins=50)\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "X_num = X[['MonthlyCharges','tenure']]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>MonthlyCharges</th>\n",
+       "      <th>tenure</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>29.85</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>56.95</td>\n",
+       "      <td>34</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>53.85</td>\n",
+       "      <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>42.30</td>\n",
+       "      <td>45</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>70.70</td>\n",
+       "      <td>2</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   MonthlyCharges  tenure\n",
+       "0           29.85       1\n",
+       "1           56.95      34\n",
+       "2           53.85       2\n",
+       "3           42.30      45\n",
+       "4           70.70       2"
+      ]
+     },
+     "execution_count": 42,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X_num.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 40,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from sklearn.preprocessing import StandardScaler\n",
+    "transformer = StandardScaler().fit(X_num)\n",
+    "X_num_stand = transformer.transform(X_num)\n",
+    "X_num_stand = pd.DataFrame(X_num_stand)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>0</th>\n",
+       "      <th>1</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>-1.160323</td>\n",
+       "      <td>-1.277445</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>-0.259629</td>\n",
+       "      <td>0.066327</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>-0.362660</td>\n",
+       "      <td>-1.236724</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>-0.746535</td>\n",
+       "      <td>0.514251</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>0.197365</td>\n",
+       "      <td>-1.236724</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "          0         1\n",
+       "0 -1.160323 -1.277445\n",
+       "1 -0.259629  0.066327\n",
+       "2 -0.362660 -1.236724\n",
+       "3 -0.746535  0.514251\n",
+       "4  0.197365 -1.236724"
+      ]
+     },
+     "execution_count": 41,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X_num_stand.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 51,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>SeniorCitizen</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   SeniorCitizen\n",
+       "0              0\n",
+       "1              0\n",
+       "2              0\n",
+       "3              0\n",
+       "4              0"
+      ]
+     },
+     "execution_count": 51,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X_cat = X['SeniorCitizen']\n",
+    "X_cat = pd.DataFrame(X_cat)\n",
+    "X_cat.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 50,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>0</th>\n",
+       "      <th>1</th>\n",
+       "      <th>2</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>-1.160323</td>\n",
+       "      <td>-1.277445</td>\n",
+       "      <td>0.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>-0.259629</td>\n",
+       "      <td>0.066327</td>\n",
+       "      <td>0.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>-0.362660</td>\n",
+       "      <td>-1.236724</td>\n",
+       "      <td>0.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>-0.746535</td>\n",
+       "      <td>0.514251</td>\n",
+       "      <td>0.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>0.197365</td>\n",
+       "      <td>-1.236724</td>\n",
+       "      <td>0.0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "          0         1    2\n",
+       "0 -1.160323 -1.277445  0.0\n",
+       "1 -0.259629  0.066327  0.0\n",
+       "2 -0.362660 -1.236724  0.0\n",
+       "3 -0.746535  0.514251  0.0\n",
+       "4  0.197365 -1.236724  0.0"
+      ]
+     },
+     "execution_count": 50,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X_concat = pd.DataFrame(np.concatenate((X_num_stand, X_cat), axis=1))\n",
+    "X_concat.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "No     5174\n",
+       "Yes    1869\n",
+       "Name: Churn, dtype: int64"
+      ]
+     },
+     "execution_count": 34,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "y.value_counts()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 55,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from sklearn.model_selection import train_test_split\n",
+    "X_train, X_test, y_train, y_test = train_test_split(X_concat, y, test_size=0.4, random_state=100)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 61,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "No     3108\n",
+       "Yes    1117\n",
+       "Name: Churn, dtype: int64"
+      ]
+     },
+     "execution_count": 61,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "y_train.value_counts()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 68,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.7817601135557133"
+      ]
+     },
+     "execution_count": 68,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from sklearn.linear_model import LogisticRegression\n",
+    "classification = LogisticRegression(random_state=0, solver='lbfgs',\n",
+    "                  multi_class='multinomial').fit(X_train, y_train)\n",
+    "classification.score(X_test, y_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# deal with data imbalance (apply balance techniques on tran set only! otherwise overfitting)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 60,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "Yes    3108\n",
+       "No     3108\n",
+       "Name: Churn, dtype: int64"
+      ]
+     },
+     "execution_count": 60,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from imblearn.over_sampling import SMOTE\n",
+    "smote = SMOTE()\n",
+    "# X_train = churnData[['tenure', 'SeniorCitizen','MonthlyCharges']]\n",
+    "# transformer = StandardScaler().fit(X_train)\n",
+    "# X_train = transformer.transform(X_train)\n",
+    "# y = churnData['Churn']\n",
+    "X_sm, y_sm = smote.fit_sample(X_train, y_train)\n",
+    "y_sm.value_counts()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 67,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.7185947480482612"
+      ]
+     },
+     "execution_count": 67,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "classification_sm = LogisticRegression(random_state=0, solver='lbfgs',\n",
+    "                  multi_class='multinomial').fit(X_sm, y_sm)\n",
+    "classification_sm.score(X_test, y_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 65,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "No     2794\n",
+       "Yes    1117\n",
+       "Name: Churn, dtype: int64"
+      ]
+     },
+     "execution_count": 65,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from imblearn.under_sampling import TomekLinks\n",
+    "tl = TomekLinks('majority')\n",
+    "X_tl, y_tl = tl.fit_sample(X_train, y_train)\n",
+    "y_tl.value_counts()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 66,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "No     2710\n",
+       "Yes    1117\n",
+       "Name: Churn, dtype: int64"
+      ]
+     },
+     "execution_count": 66,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from imblearn.under_sampling import TomekLinks\n",
+    "tl = TomekLinks('majority')\n",
+    "X_tl2, y_tl2 = tl.fit_sample(X_tl, y_tl)\n",
+    "y_tl2.value_counts()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 69,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.7689850958126331"
+      ]
+     },
+     "execution_count": 69,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "classification_tl = LogisticRegression(random_state=0, solver='lbfgs',\n",
+    "                  multi_class='multinomial').fit(X_tl2, y_tl2)\n",
+    "classification_tl.score(X_test, y_test)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
